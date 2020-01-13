@@ -11,72 +11,61 @@ public class Jeu {
 	public Jeu(Carte carte, List<Joueur> joueurs) {
 		super();
 		this.carte = carte;
-		this.joueurs = joueurs;
+		this.setJoueurs(joueurs);
+		repartirTerritoires();
+		repartirDes();
+		System.out.println(this.carte.getTerritoires());
+	}
+	
+	private void repartirTerritoires() {
 		Territoire[][] territoires = this.carte.getTerritoires();
 		List<Joueur> joueursAttribues = new ArrayList<Joueur>();
-	    //for (Joueur item : joueurs) joueursAttribues.add((Joueur) item);
-	    //joueursAttribues.remove(2);
-		int territoiresCount = 0;
 		// TODO : check si ma condition d'attribution afin que tous les joueurs ait au moins un territoire fonctionne
 		// Répartition des territoires pour les joueurs
-		while(joueursAttribues.size() != joueurs.size()) {
+		while(joueursAttribues.size() != this.joueurs.size()) {
 			for(Territoire[] list : territoires) {
 				for(Territoire territoire: list) {
-					Joueur joueur = getRandomJoueur(joueurs);
+					Joueur joueur = getRandomJoueur(this.joueurs);
 					if(territoire != null) {
 						territoire.setJoueur(joueur);
-						territoiresCount++;
 						if(!joueursAttribues.contains(joueur))
 							joueursAttribues.add(joueur);
 					}
 				}
 			}
 		}
+	}
+	
+	private void repartirDes() {
+		// TODO : génerer le nombre de dés en fonction du nombre de territoires et joueurs
 		int numberDices = 20;
 		// Répartion des dés dans les territoires de chaque joueur
-		for(Joueur joueur: joueurs) {
+		for(Joueur joueur: this.joueurs) {
 			System.out.println(joueur);
-			// int numberDices = (territoiresCount * 3) / joueurs.size();
-			// int dicesRemaining = 3
-			int dicesRemaining = numberDices;
 			System.out.println("Il y a " + numberDices + " dés par joueurs");
 			List<Territoire> territoiresJoueur = new ArrayList<Territoire>();
-			for(Territoire[] list : territoires) {
+			for(Territoire[] list : this.carte.getTerritoires()) {
 				for(Territoire territoire: list) {
 					if(territoire != null && territoire.getJoueur().getID() == joueur.getID()) {
 						territoiresJoueur.add(territoire);
 					}
 				}
 			}
-			/*
-			//while(dicesRemaining != 0) {	
-				for(Territoire territoire : territoiresJoueur) {
-					if(dicesRemaining > 0) {
-						int dicesTerritoire = getRandomNumberInRange(1, dicesRemaining < 8 ? (8 - dicesRemaining) : 8);
-						dicesRemaining -= dicesTerritoire;
-						territoire.setNombreDes(dicesTerritoire);
-						System.out.println("Le territoire " + territoire.getID() + " du joueur " + joueur.getID() + " a " + territoire.getNombreDes() + " dés");
-					}
+			int dicesRemaining = numberDices - territoiresJoueur.size();
+			while(dicesRemaining > 0) {
+				Territoire randomTerritory = getRandomTerritoire(territoiresJoueur);
+				int diceNumber = dicesRemaining < 8 ? dicesRemaining : 8;
+				int randomNumber = getRandomNumberInRange(1, diceNumber);
+				// vérification si la case est pas remplie (max 8 dés par cases)
+				if(randomTerritory.getNombreDes() + randomNumber <= 8) {
+					dicesRemaining -= randomNumber;
+					randomTerritory.addDes(randomNumber);
 				}
-			//}
-			 */
-			while(dicesRemaining != 0) {
-				Territoire randomT = getRandomTerritoire(territoiresJoueur);
-				System.out.println("dice remaining " + dicesRemaining);
-				System.out.println("dice remaining possible " + (dicesRemaining < 8 ? (8 - dicesRemaining) : 8));
-				int diceNumber = dicesRemaining < 8 ? (8 - dicesRemaining) : 8;
-				int dicesTerritoire = getRandomNumberInRange(1, diceNumber);
-				System.out.println("dice choisi " + dicesTerritoire);
-				if(randomT.getNombreDes() + dicesTerritoire <= 8)
-					dicesRemaining -= diceNumber;
-					randomT.addDes(dicesTerritoire);
 			}
 			System.out.println(territoiresJoueur);
 		}
-		
-		System.out.println(territoires);
-
 	}
+	
     private static Joueur getRandomJoueur(List<Joueur> list) 
     { 
         return list.get(new Random().nextInt(list.size()));
@@ -89,5 +78,11 @@ public class Jeu {
     
     private static int getRandomNumberInRange(int min, int max) {
 		return new Random().nextInt((max - min) + 1) + min;
+	}
+	public List<Joueur> getJoueurs() {
+		return joueurs;
+	}
+	public void setJoueurs(List<Joueur> joueurs) {
+		this.joueurs = joueurs;
 	}
 }

@@ -10,6 +10,8 @@ import java.util.Scanner;
 
 
 public class Partie {
+	static Scanner sc = new Scanner(System.in);
+	
 	public static void main(String[] args) {
 		List<Joueur> joueurs = genererJoueurs();
 		
@@ -24,8 +26,13 @@ public class Partie {
 		Jeu jeu = new Jeu(carte, joueurs);
 		System.out.println("Début de la partie : " + joueurs.size() + " joueurs");
 		System.out.println(carte.toString());
+		for(Joueur joueur: joueurs) {
+			jouerTour(carte, joueur);
+		}
+		sc.close();
 	}
 	
+	// Lecture du fichier des territoires et création de la matrice des territoires
 	public static Territoire[][] readFile() {
 		List<String[]> lines = new ArrayList<String[]>();
 		int firstIdx = 0;
@@ -58,10 +65,9 @@ public class Partie {
 		return territoires;
 	}
 	
+	// Génération des joueurs à partir du chiffre entré dans le scanner
 	public static List<Joueur> genererJoueurs(){
 		ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
-		/*
-		Scanner sc = new Scanner(System.in);
 		int max = 7;
 		int nombreJoueurs;
 		System.out.println("Entrez le nombre de joueurs : (" + max + " maximum)");
@@ -70,13 +76,21 @@ public class Partie {
 		    System.out.println("Maximum " + max + " joueurs. Réessayez :");
 		    nombreJoueurs = sc.nextInt();
 		} while (nombreJoueurs > max);
-		*/
-		int nombreJoueurs = 4;
 		for(int i = 0; i < nombreJoueurs; i++) {
 			Joueur nouveauJoueur = new Joueur();
 			joueurs.add(nouveauJoueur);
 		}
-		// sc.close();
 		return joueurs;
+	}
+	
+	public static void jouerTour(Carte carte, Joueur joueur) {
+		System.out.println("Début du tour du joueur " + joueur.getID());
+		System.out.println("Liste de vos territoires " + carte.getJoueurTerritoires(joueur));
+		System.out.println("Attaquez : (territoire attaquant territoire attaqué)");
+		sc.nextLine();
+		String attaque = sc.nextLine();
+	    attaque = attaque.replaceAll("[^0-9]", " "); 
+	    List<String> territoiresAttaque = Arrays.asList(attaque.trim().split(" "));
+	    joueur.attaquer(Integer.parseInt(territoiresAttaque.get(0)), Integer.parseInt(territoiresAttaque.get(1)));
 	}
 }
