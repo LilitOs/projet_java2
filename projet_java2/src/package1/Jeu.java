@@ -60,11 +60,11 @@ public class Jeu {
 				}
 			//}
 			 */
-			while(dicesRemaining != 0) {
+			while(dicesRemaining > 0) {
 				Territoire randomT = getRandomTerritoire(territoiresJoueur);
 				System.out.println("dice remaining " + dicesRemaining);
 				System.out.println("dice remaining possible " + (dicesRemaining < 8 ? (8 - dicesRemaining) : 8));
-				int diceNumber = dicesRemaining < 8 ? (8 - dicesRemaining) : 8;
+				int diceNumber = dicesRemaining < 8 ? ( dicesRemaining) : 8;
 				int dicesTerritoire = getRandomNumberInRange(1, diceNumber);
 				System.out.println("dice choisi " + dicesTerritoire);
 				if(randomT.getNombreDes() + dicesTerritoire <= 8)
@@ -87,7 +87,7 @@ public class Jeu {
         return list.get(new Random().nextInt(list.size()));
     }
     
-    private static int getRandomNumberInRange(int min, int max) {
+    public static int getRandomNumberInRange(int min, int max) {
 		return new Random().nextInt((max - min) + 1) + min;
 	}
 }
