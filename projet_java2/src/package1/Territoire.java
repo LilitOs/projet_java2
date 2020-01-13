@@ -46,6 +46,15 @@ public class Territoire {
 	public void modifierJoueur() {
 		
 	}
+	
+	public int lancerDes() {
+		int somme =0;
+		for(int i =0; i<nombreDes; i++) {
+			int randomNbDes = Jeu.getRandomNumberInRange(1, 6);
+			somme += randomNbDes;
+		} 
+		return somme;
+	}
 	@Override
 	public String toString() {
 		return "Territoire n°" + ID + " / " + nombreDes + " dés / " + joueur;

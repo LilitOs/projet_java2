@@ -76,7 +76,7 @@ public class Jeu {
         return list.get(new Random().nextInt(list.size()));
     }
     
-    private static int getRandomNumberInRange(int min, int max) {
+    public static int getRandomNumberInRange(int min, int max) {
 		return new Random().nextInt((max - min) + 1) + min;
 	}
 	public List<Joueur> getJoueurs() {

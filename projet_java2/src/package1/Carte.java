@@ -29,7 +29,7 @@ public class Carte {
 		List<Territoire> joueurTerritoires = new ArrayList<Territoire>();
 		for(Territoire[] territoireRow: this.territoires) {
 			for(Territoire territoireColumn: territoireRow) {
-				if(territoireColumn.getJoueur().equals(joueur))
+				if(territoireColumn != null && territoireColumn.getJoueur().equals(joueur))
 					joueurTerritoires.add(territoireColumn);
 			}
 		}
