@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,9 +14,16 @@ public class Partie {
 		List<Joueur> joueurs = genererJoueurs();
 		
 		Territoire[][] territoires = readFile();
-		
+		System.out.println(Arrays.deepToString(territoires));
+		for(Territoire[] a: territoires) {
+			for(Territoire x: a) {
+				System.out.println(x);
+			}
+		}
 		Carte carte = new Carte(territoires);
 		Jeu jeu = new Jeu(carte, joueurs);
+		System.out.println("Début de la partie : " + joueurs.size() + " joueurs");
+		System.out.println(carte.toString());
 	}
 	
 	public static Territoire[][] readFile() {
@@ -34,6 +42,7 @@ public class Partie {
 		}
 		String[][] array = new String[lines.size()][0];
 		Territoire territoires[][] = new Territoire[lines.size()][0];
+		lines.toArray(array);
 		for(String[] a: array) {
 			secondIdx = 0;
 			territoires[firstIdx] = new Territoire[a.length];
@@ -50,14 +59,24 @@ public class Partie {
 	}
 	
 	public static List<Joueur> genererJoueurs(){
-		Scanner sc = new Scanner(System.in);
-		
-		int nombreJoueurs = sc.nextInt();
 		ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
+		/*
+		Scanner sc = new Scanner(System.in);
+		int max = 7;
+		int nombreJoueurs;
+		System.out.println("Entrez le nombre de joueurs : (" + max + " maximum)");
+		do {
+		    while (!sc.hasNextInt()) sc.next();
+		    System.out.println("Maximum " + max + " joueurs. Réessayez :");
+		    nombreJoueurs = sc.nextInt();
+		} while (nombreJoueurs > max);
+		*/
+		int nombreJoueurs = 4;
 		for(int i = 0; i < nombreJoueurs; i++) {
 			Joueur nouveauJoueur = new Joueur();
 			joueurs.add(nouveauJoueur);
 		}
+		// sc.close();
 		return joueurs;
 	}
 }

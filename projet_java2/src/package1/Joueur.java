@@ -1,27 +1,25 @@
 package package1;
 
 public class Joueur {
-	private static int ID = 0;
-	
+	private int ID = 1;
+	private static int counter = 1;
+
+
+	public Joueur() {
+		super();
+		this.ID = counter++;
+	}
+
+	@Override
+	public String toString() {
+		return "Joueur " + ID;
+	}
+
 	public int getID() {
 		return ID;
 	}
 
 	public void jouer() {
 		
-	}
-
-	public Joueur() {
-		super();
-		this.incrementID();
-	}
-	
-	public void incrementID() {
-		ID += 1;
-	}
-
-	@Override
-	public String toString() {
-		return "Joueur " + ID;
 	}
 }

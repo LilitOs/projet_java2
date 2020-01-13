@@ -1,19 +1,42 @@
 package package1;
 
-import java.util.List;
-
 public class Territoire {
-	private int nombreDes;
-	private List<Joueur> joueurs;
+	private int nombreDes = 1;
+	private Joueur joueur;
+	private int ID = 1;
+	private static int counter = 1;
+
+
+	public Territoire() {
+		super();
+		this.ID = counter++;
+	}
+		
+	public int getID() {
+		return ID;
+	}
+
+	public void setJoueur(Joueur joueur) {
+		this.joueur = joueur;
+	}
+
 	
 	public int getNombreDes() {
 		return nombreDes;
 	}
+	
 	public void setNombreDes(int nombreDes) {
-		this.nombreDes = nombreDes;
+		if(nombreDes <= 8)
+			this.nombreDes = nombreDes;
 	}
-	public List<Joueur> getJoueurs() {
-		return joueurs;
+	
+	public void addDes(int nombreDes) {
+		if(this.nombreDes + nombreDes <= 8)
+			this.nombreDes += nombreDes;
+	}
+	
+	public Joueur getJoueur() {
+		return joueur;
 	}
 	
 	public void recupererVoisins() {
@@ -25,6 +48,6 @@ public class Territoire {
 	}
 	@Override
 	public String toString() {
-		return "Territoire [nombreDes=" + nombreDes + ", joueurs=" + joueurs + "]";
+		return "Territoire n°" + ID + " / " + nombreDes + " dés / " + joueur;
 	}
 }
