@@ -5,13 +5,32 @@ public class Territoire {
 	private Joueur joueur;
 	private int ID = 1;
 	private static int counter = 1;
+	private int row;
+	private int col;
 
-
-	public Territoire() {
+	public Territoire(int row, int col) {
 		super();
 		this.ID = counter++;
+		this.row = row;
+		this.col = col;
 	}
 		
+	public int getRow() {
+		return row;
+	}
+
+	public void setRow(int row) {
+		this.row = row;
+	}
+
+	public int getCol() {
+		return col;
+	}
+
+	public void setCol(int col) {
+		this.col = col;
+	}
+
 	public int getID() {
 		return ID;
 	}
@@ -43,10 +62,6 @@ public class Territoire {
 		
 	}
 	
-	public void modifierJoueur() {
-		
-	}
-	
 	public int lancerDes() {
 		int somme =0;
 		for(int i =0; i<nombreDes; i++) {
@@ -58,5 +73,27 @@ public class Territoire {
 	@Override
 	public String toString() {
 		return "Territoire n°" + ID + " / " + nombreDes + " dés / " + joueur;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ID;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Territoire other = (Territoire) obj;
+		if (ID != other.ID)
+			return false;
+		return true;
 	}
 }

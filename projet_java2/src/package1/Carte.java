@@ -19,6 +19,26 @@ public class Carte {
 	public void setTerritoires(Territoire[][] territoires) {
 		this.territoires = territoires;
 	}
+	
+	public int getNombreTerritoires() {
+		int counter = 0;
+		for(Territoire[] row: this.territoires) {
+			counter += row.length;
+		}
+		return counter;
+	}
+	
+	
+	public Territoire getTerritoireById(int id){
+		Territoire territoire = null;
+		for(Territoire[] territoireRow: this.territoires) {
+			for(Territoire territoireColumn: territoireRow) {
+				if(territoireColumn != null && territoireColumn.getID() == id)
+					territoire = territoireColumn;
+			}
+		}
+		return territoire;
+	}
 
 	@Override
 	public String toString() {
