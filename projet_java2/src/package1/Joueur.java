@@ -60,7 +60,10 @@ public class Joueur {
 			System.out.println("Le territoire attaqué reste inchangé");
 			territoireAttaquant.setNombreDes(1);
 		}
-		return new int[]{scoreAttaquant, scoreAttaque};
+		int[] scores = new int[2];
+		scores[0] = scoreAttaquant;
+		scores[1] = scoreAttaque;
+		return scores;
 	}
 
 	@Override

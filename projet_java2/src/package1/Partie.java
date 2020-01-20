@@ -102,6 +102,7 @@ public class Partie {
 		 */
 		List<Color> colorsList = new ArrayList<Color>(List.of(Color.BLUE, Color.CYAN, Color.GRAY,
 				Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK));
+		
 		for (int i = 0; i < nombreJoueurs; i++) {
 			Color color = colorsList.get(new Random().nextInt(colorsList.size()));
 			Joueur nouveauJoueur = new Joueur(color);
@@ -146,9 +147,7 @@ public class Partie {
 		if(territoireAttaque.getJoueur().equals(territoireAttaquant.getJoueur())){
 			throw new Exception("Le territoire attaque appartient à l'attaquant");
 		}
-		
-		System.out.println("row " + territoireAttaque);
-		
+				
 		int[][] voisins = new int[][] {
 			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol() -1},
 			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol()},
@@ -170,7 +169,6 @@ public class Partie {
 		if(voisin == false) {
 			throw new Exception("Le territoire attaqué n'est pas un voisin");
 		}
-		System.out.println("voisin " + voisin);
 	}
 	
 	public static boolean verificationFinPartie() {

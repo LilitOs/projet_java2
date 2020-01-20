@@ -15,7 +15,6 @@ public class Jeu {
 		this.joueurs = joueurs;
 		repartirTerritoires();
 		repartirDes();
-		System.out.println(this.carte.getTerritoires());
 	}
 
 	public int getJoueurTour() {
@@ -68,7 +67,6 @@ public class Jeu {
 		int numberDices = 20;
 		// Répartion des dés dans les territoires de chaque joueur
 		for (Joueur joueur : this.joueurs) {
-			System.out.println(joueur);
 			System.out.println("Il y a " + numberDices + " dés par joueurs");
 			List<Territoire> territoiresJoueur = new ArrayList<Territoire>();
 			for (Territoire[] list : this.carte.getTerritoires()) {

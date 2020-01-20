@@ -13,11 +13,17 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,39 +32,73 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 
-public class GameBoard {
+public class GameBoard extends JFrame {
 
 	private Jeu jeu = null;
 	private Territoire territoireAttaquant = null;
 	private Territoire territoireAttaque = null;
 	private Cell[][] cells;
-	private JTextArea scoreLabel;
+	private JLabel scoreLabel;
 	private JLabel tourLabel;
 	private JButton finTourBouton;
 	
 	public static void main(String[] args, Jeu jeu) {
 		new GameBoard(jeu);
 	}
-
+ 
 	public GameBoard(Jeu jeu) {
 		this.jeu = jeu;
+		
+		setTitle("Dice Wars");
+		// confirmation pour sauvegarde avant fermeture
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				String[] buttonLabels = new String[] {"Yes", "No", "Cancel"};
+		        String defaultOption = buttonLabels[0];
+		        Icon icon = null;
+		         
+		        int answer = JOptionPane.showOptionDialog(new Frame(),
+		                "There's still something unsaved.\n" +
+		                "Do you want to save before exiting?",
+		                "Warning",
+		                JOptionPane.YES_NO_CANCEL_OPTION,
+		                JOptionPane.WARNING_MESSAGE,
+		                icon,
+		                buttonLabels,
+		                defaultOption);  
+		        
+				switch (answer) {
+				case JOptionPane.YES_OPTION:
+					System.out.println("Save and Quit");
+					System.exit(0);;
+					break;
+
+				case JOptionPane.NO_OPTION:
+					System.out.println("Don't Save and Quit");
+					System.exit(0);;
+					break;
+
+				case JOptionPane.CANCEL_OPTION:
+					System.out.println("Don't Quit");
+					break;
+				}
+			}
+        });
+		
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception ex) {
-				}
-
-				JFrame frame = new JFrame("Dice Wars");
+				}		        
 				
-				
-			    JTextArea scoreLabel = new JTextArea("Score");
-			    scoreLabel.setWrapStyleWord(true);
-			    scoreLabel.setLineWrap(true);
-			    scoreLabel.setEditable(false);
+			    scoreLabel = new JLabel("Score");
 			    scoreLabel.setVisible(true);
 			    scoreLabel.setSize(200, 30);
 
@@ -67,12 +107,8 @@ public class GameBoard {
 
 
 				finTourBouton = new JButton("Fin du tour");
-				//finTourBouton.setHorizontalAlignment(SwingConstants.CENTER);
-				//finTourBouton.setVerticalAlignment(SwingConstants.TOP);
 				finTourBouton.setSize(200, 50);
 				finTourBouton.setVisible(true);
-				// finTourBouton.setLayout(null);
-				// finTourBouton.setBounds(50, 250, 100, 50);
 		        finTourBouton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						jeu.passerTour();
@@ -88,43 +124,16 @@ public class GameBoard {
 			    textpanel.setSize(200,300);
 			    textpanel.setVisible(true);
 			    
-			    frame.add(textpanel);
+			    add(textpanel);
 			    
-				frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				/*
-				scoreLabel = new JLabel("Score");
-				scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				scoreLabel.setVerticalAlignment(SwingConstants.BOTTOM);
-				scoreLabel.setSize(300, 100);
-				scoreLabel.setVisible(true);
-				frame.add(scoreLabel);
+				setExtendedState(JFrame.MAXIMIZED_BOTH);
+				setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
-				tourLabel = new JLabel(jeu.getJoueurs().get(jeu.getJoueurTour()).displayTour());
-				tourLabel.setForeground(jeu.getJoueurs().get(jeu.getJoueurTour()).getCouleur());
-				tourLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				tourLabel.setVerticalAlignment(SwingConstants.TOP);
-				tourLabel.setSize(300, 50);
-				tourLabel.setVisible(true);
-				frame.add(tourLabel);
-				 * 
-				 */
-				
-				
-				//frame.add(finTourBouton);
-				
-				frame.add(new GameBoard.GamePanel());
-				frame.setBackground(Color.WHITE);
-				frame.pack();
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-				
-				/*
-				while(Partie.verificationFinPartie() != true) {
-					System.out.println("jouer tour");
-					
-				}
-				*/
+				add(new GameBoard.GamePanel());
+				setBackground(Color.WHITE);
+				pack();
+				setLocationRelativeTo(null);
+				setVisible(true);
 			}
 		});
 	}
@@ -178,8 +187,7 @@ public class GameBoard {
 
 			// Au clique sur un territoire
 			this.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-			    	System.out.println("terroite attaque " + territoire);
+				public void actionPerformed(ActionEvent evt) {
 			    	if(territoire == null) {
 						return;
 					}
@@ -194,7 +202,6 @@ public class GameBoard {
 					// Si 1er clique : sélection du territoire attaquant
 					if(territoireAttaquant == null) {
 						// Ne rien faire si le territoire n'est pas celui du joueur du tour courant
-						System.out.println("condition terr " + !territoire.getJoueur().equals(jeu.getJoueurs().get(jeu.getJoueurTour())));
 						if(!territoire.getJoueur().equals(jeu.getJoueurs().get(jeu.getJoueurTour()))) {
 							return;
 						}
@@ -206,20 +213,16 @@ public class GameBoard {
 						setBorder(new LineBorder(Color.BLACK, 5));
 					}else {
 						// Sinon : sélection du territoire à attaquer
-						System.out.println("TERROITRE ATTAQUE 1" + territoireAttaque);
-
 						territoireAttaque = territoire;
-						System.out.println("TERROITRE ATTAQUE 2" + territoireAttaque);
 						try {
 							Partie.verificationAttaque(territoireAttaquant, territoireAttaque, jeu.getJoueurs().get(jeu.getJoueurTour()));
 					        setBackground(Color.GREEN);			    		
 						} catch (Exception ex) {
-							ex.printStackTrace();
+							System.out.println(ex.getMessage());
 							return;
 						}
 						
 						int[] scores = territoire.getJoueur().attaquer(territoireAttaquant, territoireAttaque);
-						System.out.println("scores " + scores[0] + " " + scores[1]);
 												
 						Cell cellAttaque = cells[territoireAttaque.getRow()][territoireAttaque.getCol()];
 						cellAttaque.setText(String.valueOf(territoireAttaque.getNombreDes()));
@@ -245,8 +248,8 @@ public class GameBoard {
 			    		try {
 							Partie.verificationAttaque(territoireAttaquant, territoire, jeu.getJoueurs().get(jeu.getJoueurTour()));
 					        setBorder(new LineBorder(Color.BLACK, 3));
-						} catch (Exception e) {
-							e.printStackTrace();
+						} catch (Exception ex) {
+							System.out.println(ex.getMessage());
 						}
 			    	}
 			    }
@@ -259,10 +262,12 @@ public class GameBoard {
 		}
 		
 		public String displayScore(int[] scores) {
-			return "Scores \nAttaquant : " + String.valueOf(scores[0]) +
-					"\nAttaqué : " + 
+			System.out.println("display score 0" + scores[0]);
+			System.out.println("display score 1" + scores[1]);
+			return "<html>Scores <br>Attaquant : " + String.valueOf(scores[0]) +
+					"<br>Attaqué : " + 
 					String.valueOf(scores[1]) +
-					"\nVictoire de " + (scores[0] > scores[1] ? "l'attaquant" : "l'attaqué");
+					"<br>Victoire de " + (scores[0] > scores[1] ? "l'attaquant" : "l'attaqué</html>");
 		}
 		
 		@Override
