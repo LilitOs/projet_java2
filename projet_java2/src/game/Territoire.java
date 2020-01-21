@@ -1,6 +1,12 @@
-package package1;
+package game;
 
-public class Territoire {
+import java.io.Serializable;
+
+public class Territoire implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1339536055196507524L;
 	private int nombreDes = 1;
 	private Joueur joueur;
 	private int ID = 1;

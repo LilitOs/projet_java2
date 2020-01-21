@@ -1,4 +1,4 @@
-package package1;
+package game;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,43 +54,7 @@ public class GameBoard extends JFrame {
 		this.jeu = jeu;
 		
 		setTitle("Dice Wars");
-		// confirmation pour sauvegarde avant fermeture
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				String[] buttonLabels = new String[] {"Yes", "No", "Cancel"};
-		        String defaultOption = buttonLabels[0];
-		        Icon icon = null;
-		         
-		        int answer = JOptionPane.showOptionDialog(new Frame(),
-		                "There's still something unsaved.\n" +
-		                "Do you want to save before exiting?",
-		                "Warning",
-		                JOptionPane.YES_NO_CANCEL_OPTION,
-		                JOptionPane.WARNING_MESSAGE,
-		                icon,
-		                buttonLabels,
-		                defaultOption);  
-		        
-				switch (answer) {
-				case JOptionPane.YES_OPTION:
-					System.out.println("Save and Quit");
-					System.exit(0);;
-					break;
-
-				case JOptionPane.NO_OPTION:
-					System.out.println("Don't Save and Quit");
-					System.exit(0);;
-					break;
-
-				case JOptionPane.CANCEL_OPTION:
-					System.out.println("Don't Quit");
-					break;
-				}
-			}
-        });
-		
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -132,6 +97,52 @@ public class GameBoard extends JFrame {
 				add(new GameBoard.GamePanel());
 				setBackground(Color.WHITE);
 				pack();
+				
+				
+				// confirmation pour sauvegarde avant fermeture
+				setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+				addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						String[] buttonLabels = new String[] {"Yes", "No", "Cancel"};
+				        String defaultOption = buttonLabels[0];
+				        Icon icon = null;
+				         
+				        int answer = JOptionPane.showOptionDialog(new Frame(),
+				                "There's still something unsaved.\n" +
+				                "Do you want to save before exiting?",
+				                "Warning",
+				                JOptionPane.YES_NO_CANCEL_OPTION,
+				                JOptionPane.WARNING_MESSAGE,
+				                icon,
+				                buttonLabels,
+				                defaultOption);  
+				        
+						switch (answer) {
+						case JOptionPane.YES_OPTION:
+							System.out.println("Save and Quit");
+							try {
+								Partie.sauvegarder();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+							System.exit(0);
+							break;
+
+						case JOptionPane.NO_OPTION:
+							System.out.println("Don't Save and Quit");
+							Partie.supprimerSauvegarde();
+							System.exit(0);
+							break;
+
+						case JOptionPane.CANCEL_OPTION:
+							System.out.println("Don't Quit");
+							break;
+						}
+					}
+		        });
+
+				
 				setLocationRelativeTo(null);
 				setVisible(true);
 			}
@@ -436,7 +447,6 @@ public class GameBoard extends JFrame {
 				int cellSize = Math.max(cellHeight, cellWidth);
 
 				prefSize = new Dimension(cellSize * colCount, cellSize * rowCount);
-				System.out.println(prefSize);
 			}
 
 			public int getRowCount() {

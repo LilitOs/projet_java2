@@ -1,10 +1,15 @@
-package package1;
+package game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Carte {
+public class Carte implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1589142986449785114L;
 	private Territoire[][] territoires;
 	
 	public Carte(Territoire[][] territoires) {

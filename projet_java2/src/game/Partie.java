@@ -1,12 +1,19 @@
-package package1;
+package game;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,41 +25,67 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Partie {
-	static Scanner sc = new Scanner(System.in);
+	private static Scanner sc = new Scanner(System.in);
+	private static Jeu jeu;
+	private static String filepath = "./sauvegarde.json";
 
-	public static void main(String[] args) {
-		List<Joueur> joueurs = genererJoueurs();
+	public static void main(String[] args) {		
+		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
+		boolean sauvegarde = false;
 
-		Territoire[][] territoires = readFile();
-		System.out.println(Arrays.deepToString(territoires));
-		for (Territoire[] a : territoires) {
-			for (Territoire x : a) {
-				System.out.println(x);
+		// Si une sauvegarde existe, proposer de la reprendre
+		if(new File("./sauvegarde.json").exists()) {
+			System.out.println("Une sauvegarde a été trouvée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
+
+			String reponse = null;
+			do { 
+				reponse = sc.nextLine(); 
+			} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
+
+			sc.close();
+			sauvegarde = reponse.toLowerCase().equals("oui") ? true : false;
+		}
+
+		Territoire[][] territoires;
+		Carte carte = null;
+		if(sauvegarde) {
+			try {
+				lireSauvegarde();
+				carte = jeu.getCarte();
+			} catch (ClassNotFoundException | IOException | ClassCastException e) {
+				e.printStackTrace();
+				System.out.println("Erreur de sauvegarde");
+				supprimerSauvegarde();
+				sauvegarde = false;
 			}
 		}
-		Carte carte = new Carte(territoires);
-		Jeu jeu = new Jeu(carte, joueurs);
-		System.out.println("Début de la partie : " + joueurs.size() + " joueurs");
 
-		System.out.println(carte);
+		if(!sauvegarde){
+			List<Joueur> joueurs = genererJoueurs();
+			territoires = genererMap(joueurs.size());
+			carte = new Carte(territoires);
+			jeu = new Jeu(carte, joueurs);
+		}
 
 		new GameBoard(jeu);
-		/*
-		 * 
-		 * JFrame frame = new JFrame("Test");
-		 * frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); frame.add(new
-		 * CartePanel()); frame.pack(); frame.setLocationRelativeTo(null);
-		 * frame.setVisible(true);
-		 * 
-		 * Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		 * System.out.println(screenSize.getHeight() + " " + screenSize.getWidth());
-		 * 
-		 * System.out.println(carte.toString());
-		 */
-		/*
-		 * for(Joueur joueur: joueurs) { jouerTour(carte, joueur); }
-		 */
-		sc.close();
+	}
+
+	public static void sauvegarder() throws IOException {
+		FileOutputStream fileOut = new FileOutputStream(filepath);
+		ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+		objectOut.writeObject(jeu);
+		objectOut.close();
+	}
+
+	public static void lireSauvegarde() throws IOException, ClassNotFoundException, ClassCastException {
+		FileInputStream fileIn = new FileInputStream(filepath);
+		ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+		jeu = (Jeu) objectIn.readObject();
+		objectIn.close();
+	}
+
+	public static void supprimerSauvegarde() {
+		new File(filepath).delete();
 	}
 
 	// Lecture du fichier des territoires et création de la matrice des territoires
@@ -88,6 +121,64 @@ public class Partie {
 		}
 		return territoires;
 	}
+	
+	public static Territoire[][] genererMap(int nbJoueurs) {
+		int nbTerritoires = Jeu.getRandomNumberInRange(nbJoueurs * 3 + 1, nbJoueurs * 6 + 1);
+		int nbCasesVides = nbTerritoires / 3;
+
+		int N = nbTerritoires + nbCasesVides;
+		int nbRows = (int) Math.floor(Math.sqrt(N));
+		int nbCols = (int) Math.ceil(N/nbRows);
+		if(nbCols * nbRows != N)
+		    nbCols += 1;
+		
+		Territoire territoires[][] = new Territoire[nbRows][0];
+
+		int rowIdx = 0;
+		int columnIdx = 0;
+		for (int row = 0; row < nbRows; row++) {
+			columnIdx = 0;
+			territoires[rowIdx] = new Territoire[nbCols];
+			for (int column = 0; column < nbCols; column++) {
+				if (new Random().nextBoolean() && nbTerritoires > 0) {
+					System.out.println("new Territoire");
+					Territoire territoire = new Territoire(rowIdx, columnIdx);
+					territoires[rowIdx][columnIdx] = territoire;
+					nbTerritoires--;
+				}
+				columnIdx++;
+			}
+			rowIdx++;
+		}
+
+		// S'il y a encore des territoires non présents sur la map
+		while(nbTerritoires > 0) {
+			boolean condition = false;
+			System.out.println("while begin");
+			int randomStartRow = Jeu.getRandomNumberInRange(0, nbRows - 1);
+			int randomStartCol = Jeu.getRandomNumberInRange(0, nbCols - 1);
+
+			for(int row = randomStartRow; row < (randomStartRow + nbRows); row++ ) {
+				for(int col = randomStartCol; col < (randomStartCol + nbCols); col++ ) {
+					if(territoires[row - randomStartRow][col - randomStartCol] == null) {
+						System.out.println("new territoire after");
+						Territoire territoire = new Territoire(row - randomStartRow, col - randomStartCol);
+						territoires[row - randomStartRow][col - randomStartCol] = territoire;
+						nbTerritoires--;
+						condition = true;
+						break;
+					}
+				}
+				if(condition == true){
+					break;      
+				}
+			}
+		}
+		
+		// TODO : vérification qu'il n'y a aucun territoire sans voisins
+
+		return territoires;
+	}
 
 	// Génération des joueurs à partir du chiffre entré dans le scanner
 	public static List<Joueur> genererJoueurs() {
@@ -99,15 +190,16 @@ public class Partie {
 		 * + " maximum)"); do { while (!sc.hasNextInt()) sc.next();
 		 * System.out.println("Maximum " + max + " joueurs. Réessayez :"); nombreJoueurs
 		 * = sc.nextInt(); } while (nombreJoueurs > max); sc.nextLine();
+				sc.close();
 		 */
-		List<Color> colorsList = new ArrayList<Color>(List.of(Color.BLUE, Color.CYAN, Color.GRAY,
-				Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK));
-		
+
 		for (int i = 0; i < nombreJoueurs; i++) {
-			Color color = colorsList.get(new Random().nextInt(colorsList.size()));
+			int R = (int)(Math.random()*256);
+			int G = (int)(Math.random()*256);
+			int B = (int)(Math.random()*256);
+			Color color = new Color(R, G, B);
 			Joueur nouveauJoueur = new Joueur(color);
 			joueurs.add(nouveauJoueur);
-			colorsList.remove(color);
 		}
 		return joueurs;
 	}
@@ -147,7 +239,8 @@ public class Partie {
 		if(territoireAttaque.getJoueur().equals(territoireAttaquant.getJoueur())){
 			throw new Exception("Le territoire attaque appartient à l'attaquant");
 		}
-				
+		
+		// Vérification que le territoire attaque est un territoire voisin
 		int[][] voisins = new int[][] {
 			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol() -1},
 			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol()},

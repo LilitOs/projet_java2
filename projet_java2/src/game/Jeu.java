@@ -1,10 +1,15 @@
-package package1;
+package game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Jeu {
+public class Jeu implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6425504515677342495L;
 	private Carte carte;
 	private List<Joueur> joueurs = new ArrayList<Joueur>();
 	private int joueurTour = 0;

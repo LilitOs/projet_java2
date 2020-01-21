@@ -1,8 +1,13 @@
-package package1;
+package game;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Joueur {
+public class Joueur implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 484936424360772723L;
 	private int ID = 1;
 	private static int counter = 1;
 	private Color couleur;
@@ -60,10 +65,7 @@ public class Joueur {
 			System.out.println("Le territoire attaqué reste inchangé");
 			territoireAttaquant.setNombreDes(1);
 		}
-		int[] scores = new int[2];
-		scores[0] = scoreAttaquant;
-		scores[1] = scoreAttaque;
-		return scores;
+		return new int[]{scoreAttaquant, scoreAttaque};
 	}
 
 	@Override
