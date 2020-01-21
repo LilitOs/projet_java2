@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -161,34 +163,78 @@ public class GameBoard extends JFrame {
 		}
 	}
 
-	public void jouerTourIA(Joueur joueurNouveauTour) {
-
-		// boucle sur tous les territoires du joueur
+	public void jouerTourIA(Joueur joueurNouveauTour) {	
 		List<Territoire> territoiresJoueurs = jeu.getCarte().getJoueurTerritoires(joueurNouveauTour);
+		
+		// Si IA niveau normal, faire un tri des dés pour commencer à attaquer avec les meilleurs territoires
+		if(joueurNouveauTour.getDifficulteIA() == Joueur.NIVEAU_NORMAL) {
+			Collections.sort(territoiresJoueurs, new Comparator<Territoire>(){
+			    public int compare(Territoire t1, Territoire t2) {
+			        return t2.getNombreDes() - t1.getNombreDes();
+			    }
+			});
+		}
 		
 		// compteur du nombre de territoires du joueur
 		int nbTerritoires = territoiresJoueurs.size();
+		// boucle sur tous les territoires du joueur
 		for(int i = 0; i < nbTerritoires; i++) {
 			Territoire territoireJoueur = jeu.getCarte().getJoueurTerritoires(joueurNouveauTour).get(i);
 			// n'attaquer que si le territoire a plus d'1 dé
 			if(territoireJoueur.getNombreDes() > 1) {
-				// boucle sur les territoires voisins
-				for(int[] coordsVoisin : territoireJoueur.recupererVoisins()) {
-					Territoire territoireVoisin = jeu.getCarte().getTerritoireByCoords(coordsVoisin[0], coordsVoisin[1]);
-					if(territoireVoisin != null) {
-						try {
-							Partie.verificationAttaque(territoireJoueur, territoireVoisin, joueurNouveauTour);
-							// Attaquer
-							int[] scores = territoireJoueur.getJoueur().attaquer(territoireJoueur, territoireVoisin);
-
-							if(scores[0] > scores[1]) {
-								// ajoute 1 au compteur du nombre de territoires du joueur car a il gagné
-								nbTerritoires++;
+				Territoire territoireAttaque = null;
+				int probabiliteAttaque = 0;
+				if(joueurNouveauTour.getDifficulteIA() == Joueur.NIVEAU_NORMAL) {
+					// boucle sur les territoires voisins
+					for(int[] coordsVoisin : territoireJoueur.recupererVoisins()) {
+						Territoire territoireVoisin = jeu.getCarte().getTerritoireByCoords(coordsVoisin[0], coordsVoisin[1]);
+						if(territoireVoisin != null && !territoireVoisin.getJoueur().equals(joueurNouveauTour)) {
+							// calcul probabilité
+							int victoire = territoireJoueur.calculerProbabilitesAttaque(territoireVoisin);
+							// comparaison de la nouvelle probabilité avec l'ancienne
+							if(victoire > probabiliteAttaque && victoire > 20) {
+								territoireAttaque = territoireVoisin;
+								probabiliteAttaque = victoire;
 							}
+							// si la probabilité est de 100, on peut directement attaquer
+							if(victoire == 100)
+								break;
+						}
+					}
+					try {
+						Partie.verificationAttaque(territoireJoueur, territoireAttaque, joueurNouveauTour);
+						// Attaquer
+						int[] scores = territoireJoueur.getJoueur().attaquer(territoireJoueur, territoireAttaque);
 
-							updateUIFinTour(territoireJoueur, territoireVoisin, scores);
-						} catch (Exception ex) {
-							System.out.println(ex);
+						if(scores[0] > scores[1]) {
+							// ajoute 1 au compteur du nombre de territoires du joueur car a il gagné
+							nbTerritoires++;
+						}
+
+						updateUIFinTour(territoireJoueur, territoireAttaque, scores);
+					} catch (Exception ex) {
+						System.out.println(ex);
+					}
+
+				}else {
+					// boucle sur les territoires voisins
+					for(int[] coordsVoisin : territoireJoueur.recupererVoisins()) {
+						Territoire territoireVoisin = jeu.getCarte().getTerritoireByCoords(coordsVoisin[0], coordsVoisin[1]);
+						if(territoireVoisin != null) {
+							try {
+								Partie.verificationAttaque(territoireJoueur, territoireVoisin, joueurNouveauTour);
+								// Attaquer
+								int[] scores = territoireJoueur.getJoueur().attaquer(territoireJoueur, territoireVoisin);
+
+								if(scores[0] > scores[1]) {
+									// ajoute 1 au compteur du nombre de territoires du joueur car a il gagné
+									nbTerritoires++;
+								}
+
+								updateUIFinTour(territoireJoueur, territoireVoisin, scores);
+							} catch (Exception ex) {
+								System.out.println(ex);
+							}
 						}
 					}
 				}

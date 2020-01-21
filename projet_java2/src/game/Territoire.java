@@ -90,7 +90,7 @@ public class Territoire implements Serializable, Cloneable{
 	
 	public int lancerDes() {
 		int somme =0;
-		for(int i =0; i<nombreDes; i++) {
+		for(int i =0; i < nombreDes; i++) {
 			int randomNbDes = Jeu.getRandomNumberInRange(1, 6);
 			somme += randomNbDes;
 		} 
@@ -121,5 +121,15 @@ public class Territoire implements Serializable, Cloneable{
 		if (ID != other.ID)
 			return false;
 		return true;
+	}
+	
+	public int calculerProbabilitesAttaque(Territoire territoireAttaque){
+		int p1Wins = 0;
+		for(int i = 0; i < 100; i++){
+			int p1Roll = this.lancerDes();
+			int p2Roll = territoireAttaque.lancerDes();
+			if(p1Roll > p2Roll) p1Wins++;
+		}
+		return p1Wins;
 	}
 }

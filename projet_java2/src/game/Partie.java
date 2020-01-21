@@ -37,10 +37,10 @@ public class Partie {
 
 		// Si une sauvegarde existe, proposer de la reprendre
 		if(new File("./sauvegarde.json").exists()) {
-			System.out.println("Une sauvegarde a été trouvée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
 
 			String reponse = null;
 			do { 
+				System.out.println("Une sauvegarde a été trouvée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
 				reponse = sc.nextLine(); 
 			} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
 
@@ -55,10 +55,9 @@ public class Partie {
 				lireSauvegarde();
 				carte = jeu.getCarte();
 				if(jeu.isFinie()) {
-					System.out.println("La partie est terminée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
-
 					String reponse = null;
 					do { 
+						System.out.println("La partie est terminée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
 						reponse = sc.nextLine(); 
 					} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
 
@@ -76,13 +75,22 @@ public class Partie {
 		if(!sauvegarde){
 			boolean partieContreIA = false;
 			String reponse = null;
-			System.out.println("Souhaitez-vous jouer contre l'IA ? Tapez Oui / Non");
 			do { 
+				System.out.println("Souhaitez-vous jouer contre l'IA ? Tapez Oui / Non");
 				reponse = sc.nextLine(); 
 			} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
 			partieContreIA = reponse.toLowerCase().equals("oui") ? true : false;
 
-			List<Joueur> joueurs = genererJoueurs(partieContreIA);
+			int niveauDifficulte = 2;
+			if(partieContreIA) {
+				do { 
+					System.out.println("Choisissez un niveau de difficulté facile (1) ou normal (2)\nEntrez le nombre");
+					niveauDifficulte = sc.nextInt(); 
+				} while (niveauDifficulte != 1 && niveauDifficulte != 2); 
+				sc.nextLine();	
+			}
+			
+			List<Joueur> joueurs = genererJoueurs(partieContreIA, niveauDifficulte);
 			territoires = genererMap(joueurs.size());
 
 			boolean connexe = false;
@@ -206,7 +214,7 @@ public class Partie {
     } 
 
     // Génération des joueurs à partir du chiffre entré dans le scanner
-	public static List<Joueur> genererJoueurs(boolean partieContreIA) {
+	public static List<Joueur> genererJoueurs(boolean partieContreIA, int difficulteIA) {
 		ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
 		int max = 7;
 		int min = 2;
@@ -226,8 +234,10 @@ public class Partie {
 			float luminance = 0.8f;
 			Color color = Color.getHSBColor(hue, saturation, luminance);
 			Joueur nouveauJoueur = new Joueur(color);
-			if(partieContreIA && i != 0)
+			if(partieContreIA && i != 0) {
 				nouveauJoueur.setIA(true);
+				nouveauJoueur.setDifficulteIA(difficulteIA);
+			}
 				
 			joueurs.add(nouveauJoueur);
 		}

@@ -15,7 +15,9 @@ public class Joueur implements Serializable{
 	private Color couleur;
 	private List<Territoire> territoires = new ArrayList<Territoire>();
 	private boolean IA = false;
-	private int difficulteIA = 1;
+	private int difficulteIA = 2;
+	static final int NIVEAU_FACILE = 1;
+	static final int NIVEAU_NORMAL = 2;
 	
 	public int getDifficulteIA() {
 		return difficulteIA;
@@ -63,8 +65,6 @@ public class Joueur implements Serializable{
 		int scoreAttaque = territoireAttaquee.lancerDes();
 		System.out.printf("Score de l'attaquant : %d\n", scoreAttaquant);
 		System.out.printf("Score de l'attaqué : %d\n", scoreAttaque);
-		System.out.println(territoireAttaquant.getNombreDes());
-		System.out.println(territoireAttaquee.getNombreDes());
 		if(scoreAttaquant > scoreAttaque) {
 			// Victoire de l'attaquant
 			System.out.printf("Victoire du joueur %d\n", this.ID);
@@ -78,7 +78,6 @@ public class Joueur implements Serializable{
 			attaquant.addTerritoire(territoireAttaquee);
 			attaque.removeTerritoire(territoireAttaquee);
 			territoireAttaquant.setNombreDes(1);
-			System.out.println("Nouveau joueur du territoire" + this + " " + territoireAttaquee.getJoueur());
 		}else {
 			// Défaite de l'attaquant
 			System.out.printf("Défaite du joueur %d\n", this.ID);
