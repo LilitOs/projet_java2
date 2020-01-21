@@ -27,6 +27,35 @@ public class Jeu implements Serializable {
 	}
 
 	public void passerTour() {
+		// A la fin du tour, le joueur gagne autant de dés que le plus grand nombre de territoires contigus
+		// sélection des territoires contigus
+		List<Territoire> territoiresContigus = new ArrayList<Territoire>();
+		Joueur joueurActuel = this.joueurs.get(joueurTour);
+		for(Territoire territoire: joueurActuel.getTerritoires()) {
+			int[][] voisins = territoire.recupererVoisins();
+				for(int i = 0; i < voisins.length; i++) {
+				Territoire voisin = this.carte.getTerritoireByCoords(voisins[i][0], voisins[i][1]);
+				if(voisin != null && voisin.getJoueur().equals(joueurActuel) && !territoiresContigus.contains(voisin))
+					territoiresContigus.add(voisin);
+			}
+		}
+		
+		
+		// répartition des dés sur les territoires du joueur
+		int dicesRemaining = territoiresContigus.size();
+		while (dicesRemaining > 0) {
+			if(joueurActuel.getTerritoiresDisponibles().size() == 0)
+				dicesRemaining = 0;
+			Territoire randomTerritory = getRandomTerritoire(joueurActuel.getTerritoiresDisponibles());
+			int diceNumber = dicesRemaining < 8 ? dicesRemaining : 8;
+			int randomNumber = getRandomNumberInRange(1, diceNumber);
+			// vérification si la case n'est pas remplie (max 8 dés par cases)
+			if (randomTerritory.getNombreDes() + randomNumber <= 8) {
+				dicesRemaining -= randomNumber;
+				randomTerritory.addDes(randomNumber);
+			}
+		}
+		
 		this.joueurTour += 1;
 		if(this.joueurTour >= this.joueurs.size()) {
 			this.joueurTour = 0;
@@ -44,15 +73,14 @@ public class Jeu implements Serializable {
 	private void repartirTerritoires() {
 		Territoire[][] territoires = this.carte.getTerritoires();
 		List<Joueur> joueursAttribues = new ArrayList<Joueur>();
-		// TODO : check si ma condition d'attribution afin que tous les joueurs ait au
-		// moins un territoire fonctionne
 		// Répartition des territoires pour les joueurs
 		while (joueursAttribues.size() != this.joueurs.size()) {
-			for (Territoire[] list : territoires) {
-				for (Territoire territoire : list) {
-					Joueur joueur = getRandomJoueur(this.joueurs);
+			for (Territoire[] row : territoires) {
+				for (Territoire territoire : row) {
+					Joueur joueur = joueurTerritoireMin();
 					if (territoire != null) {
 						territoire.setJoueur(joueur);
+						joueur.addTerritoire(territoire);
 						if (!joueursAttribues.contains(joueur))
 							joueursAttribues.add(joueur);
 					}
@@ -60,50 +88,42 @@ public class Jeu implements Serializable {
 			}
 		}
 	}
+	
+	private Joueur joueurTerritoireMin() {
+		Joueur joueurMin = this.joueurs.get(0);
+		for(Joueur joueur : this.joueurs) {
+			if(joueur.getTerritoires().size() < joueurMin.getTerritoires().size())
+				joueurMin = joueur;
+		}
+		return joueurMin;
+	}
 
 	private void repartirDes() {
-		/*
-		 * TODO : génerer le nombre de dés en fonction du nombre de territoires et
-		 * joueurs et pourquoi pas le nombre de territoire minimal d'un joueur de la
-		 * partie pour ne pas mettre un chiffre trop haut et qu'il ne puisse plus
-		 * remplir ses territoires
-		 *
-		 */
-		int numberDices = 20;
+		// Définition du nombre de dés pour chaque joueur
+		int numberDices = this.carte.getNombreTerritoires() / 2;
 		// Répartion des dés dans les territoires de chaque joueur
 		for (Joueur joueur : this.joueurs) {
 			System.out.println("Il y a " + numberDices + " dés par joueurs");
-			List<Territoire> territoiresJoueur = new ArrayList<Territoire>();
-			for (Territoire[] list : this.carte.getTerritoires()) {
-				for (Territoire territoire : list) {
-					if (territoire != null && territoire.getJoueur().getID() == joueur.getID()) {
-						territoiresJoueur.add(territoire);
-					}
-				}
-			}
-			int dicesRemaining = numberDices - territoiresJoueur.size();
+			int dicesRemaining = numberDices;
+			// tant qu'il y a des dés a attribués
 			while (dicesRemaining > 0) {
-				// TODO : faire un random parmi les territoires qui n'ont pas 8 cases (ne sert à
-				// rien de retester les territoires de 8 cases = max)
-				Territoire randomTerritory = getRandomTerritoire(territoiresJoueur);
+				if(joueur.getTerritoiresDisponibles().size() == 0)
+					dicesRemaining = 0;
+				// sélection d'un territoire aléatoire qui a moins de 8 dés (max)
+				Territoire randomTerritory = getRandomTerritoire(joueur.getTerritoiresDisponibles());
 				int diceNumber = dicesRemaining < 8 ? dicesRemaining : 8;
 				int randomNumber = getRandomNumberInRange(1, diceNumber);
-				// vérification si la case est pas remplie (max 8 dés par cases)
+				// vérification si la case n'est pas remplie (max 8 dés par cases)
 				if (randomTerritory.getNombreDes() + randomNumber <= 8) {
 					dicesRemaining -= randomNumber;
 					randomTerritory.addDes(randomNumber);
 				}
 			}
-			System.out.println(territoiresJoueur);
 		}
 	}
-
-	private static Joueur getRandomJoueur(List<Joueur> list) {
-		return list.get(new Random().nextInt(list.size()));
-	}
-
-	private static Territoire getRandomTerritoire(List<Territoire> list) {
-		return list.get(new Random().nextInt(list.size()));
+	
+	private static Territoire getRandomTerritoire(List<Territoire> territoires) {
+		return territoires.get(new Random().nextInt(territoires.size()));
 	}
 
 	public static int getRandomNumberInRange(int min, int max) {

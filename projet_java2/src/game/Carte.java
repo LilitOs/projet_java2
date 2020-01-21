@@ -11,7 +11,7 @@ public class Carte implements Serializable{
 	 */
 	private static final long serialVersionUID = 1589142986449785114L;
 	private Territoire[][] territoires;
-	
+
 	public Carte(Territoire[][] territoires) {
 		super();
 		this.territoires = territoires;
@@ -44,6 +44,14 @@ public class Carte implements Serializable{
 		}
 		return territoire;
 	}
+	
+	public Territoire getTerritoireByCoords(int row, int col) {
+		Territoire territoire = null;
+		if(row >= 0 && col >= 0 && row < territoires.length && col < territoires[0].length) {
+			territoire = territoires[row][col];
+		}
+		return territoire;
+	}
 
 	@Override
 	public String toString() {
@@ -60,4 +68,5 @@ public class Carte implements Serializable{
 		}
 		return joueurTerritoires;
 	}
+
 }

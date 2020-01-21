@@ -87,40 +87,6 @@ public class Partie {
 	public static void supprimerSauvegarde() {
 		new File(filepath).delete();
 	}
-
-	// Lecture du fichier des territoires et création de la matrice des territoires
-	public static Territoire[][] readFile() {
-		List<String[]> lines = new ArrayList<String[]>();
-		try {
-			BufferedReader csvReader = new BufferedReader(new FileReader("./territoires.csv"));
-			String row;
-			while ((row = csvReader.readLine()) != null) {
-				lines.add(row.split(";"));
-			}
-			csvReader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		String[][] array = new String[lines.size()][0];
-		Territoire territoires[][] = new Territoire[lines.size()][0];
-		lines.toArray(array);
-
-		int rowIdx = 0;
-		int columnIdx = 0;
-		for (String[] row : array) {
-			columnIdx = 0;
-			territoires[rowIdx] = new Territoire[row.length];
-			for (String column : row) {
-				if (column.equals("1")) {
-					Territoire territoire = new Territoire(rowIdx, columnIdx);
-					territoires[rowIdx][columnIdx] = territoire;
-				}
-				columnIdx++;
-			}
-			rowIdx++;
-		}
-		return territoires;
-	}
 	
 	public static Territoire[][] genererMap(int nbJoueurs) {
 		int nbTerritoires = Jeu.getRandomNumberInRange(nbJoueurs * 3 + 1, nbJoueurs * 6 + 1);
@@ -194,10 +160,12 @@ public class Partie {
 		 */
 
 		for (int i = 0; i < nombreJoueurs; i++) {
-			int R = (int)(Math.random()*256);
-			int G = (int)(Math.random()*256);
-			int B = (int)(Math.random()*256);
-			Color color = new Color(R, G, B);
+			Random random = new Random();
+			float hue = random.nextFloat();
+			float saturation = (random.nextInt(2000) + 1000) / 10000f;
+			float luminance = 0.9f;
+			Color color = Color.getHSBColor(hue, saturation, luminance);
+
 			Joueur nouveauJoueur = new Joueur(color);
 			joueurs.add(nouveauJoueur);
 		}
@@ -241,16 +209,7 @@ public class Partie {
 		}
 		
 		// Vérification que le territoire attaque est un territoire voisin
-		int[][] voisins = new int[][] {
-			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol() -1},
-			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol()},
-			new int[] {territoireAttaque.getRow() - 1, territoireAttaque.getCol() + 1},
-			new int[] {territoireAttaque.getRow(), territoireAttaque.getCol() - 1},
-			new int[] {territoireAttaque.getRow(), territoireAttaque.getCol() + 1},
-			new int[] {territoireAttaque.getRow() + 1, territoireAttaque.getCol() - 1},
-			new int[] {territoireAttaque.getRow() + 1, territoireAttaque.getCol()},
-			new int[] {territoireAttaque.getRow() + 1, territoireAttaque.getCol() + 1},
-		};
+		int[][] voisins = territoireAttaque.recupererVoisins();
 		
 		boolean voisin = false;
 		int [] coordsAttaque = new int[] {territoireAttaquant.getRow(), territoireAttaquant.getCol()};
@@ -264,7 +223,13 @@ public class Partie {
 		}
 	}
 	
-	public static boolean verificationFinPartie() {
-		return false;
+	public static Joueur verificationFinPartie() {
+		Joueur gagnant = null;
+		for(Joueur joueur: jeu.getJoueurs()) {
+			if(joueur.getTerritoires().size() == jeu.getCarte().getNombreTerritoires()) {
+				gagnant = joueur;
+			}
+		}
+		return gagnant;
 	}
 }

@@ -76,7 +76,10 @@ public class GameBoard extends JFrame {
 				finTourBouton.setVisible(true);
 		        finTourBouton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						Joueur joueurFinTour = jeu.getJoueurs().get(jeu.getJoueurTour());
 						jeu.passerTour();
+						for(Territoire territoire: joueurFinTour.getTerritoires())
+							updateCell(territoire);
 						tourLabel.setText(jeu.getJoueurs().get(jeu.getJoueurTour()).displayTour());
 						tourLabel.setForeground(jeu.getJoueurs().get(jeu.getJoueurTour()).getCouleur());
 					}
@@ -147,6 +150,14 @@ public class GameBoard extends JFrame {
 				setVisible(true);
 			}
 		});
+	}
+	
+	
+	public void updateCell(Territoire territoire) {
+		Cell cell = cells[territoire.getRow()][territoire.getCol()];
+		cell.setText(String.valueOf(territoire.getNombreDes()));
+		cell.setBackground(territoire.getJoueur().getCouleur());
+		cell.setBorder(new LineBorder(Color.BLACK, 1));
 	}
 
 	public class GamePanel extends JPanel {
@@ -234,21 +245,28 @@ public class GameBoard extends JFrame {
 						}
 						
 						int[] scores = territoire.getJoueur().attaquer(territoireAttaquant, territoireAttaque);
-												
-						Cell cellAttaque = cells[territoireAttaque.getRow()][territoireAttaque.getCol()];
-						cellAttaque.setText(String.valueOf(territoireAttaque.getNombreDes()));
-						cellAttaque.setBackground(territoireAttaque.getJoueur().getCouleur());
-						cellAttaque.setBorder(new LineBorder(Color.BLACK, 1));
+									
+						// mise à jour de la case attaquant
+						updateCell(territoireAttaquant);
 						
-						Cell cellAttaquant = cells[territoireAttaquant.getRow()][territoireAttaquant.getCol()];
-						cellAttaquant.setText(String.valueOf(territoireAttaquant.getNombreDes()));
-						cellAttaquant.setBackground(territoireAttaquant.getJoueur().getCouleur());
-						cellAttaquant.setBorder(new LineBorder(Color.BLACK, 1));
+						// mise à jour de la case attaquée
+						updateCell(territoireAttaque);
 						
 						scoreLabel.setText(displayScore(scores));
 						
 						territoireAttaquant = null;
 						territoireAttaque = null;
+						
+						Joueur gagnant = Partie.verificationFinPartie();
+						if(gagnant != null) {
+							tourLabel.setText("Victoire du " + gagnant);
+							finTourBouton.setEnabled(false);
+							for(Cell[] row: cells) {
+								for(Cell col: row) {
+									col.setEnabled(false);
+								}
+							}
+						}
 					}
 				}
 			});

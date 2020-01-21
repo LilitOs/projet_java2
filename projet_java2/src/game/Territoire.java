@@ -64,8 +64,17 @@ public class Territoire implements Serializable{
 		return joueur;
 	}
 	
-	public void recupererVoisins() {
-		
+	public int[][] recupererVoisins() {
+		return new int[][] {
+			new int[] {this.getRow() - 1, this.getCol() -1},
+			new int[] {this.getRow() - 1, this.getCol()},
+			new int[] {this.getRow() - 1, this.getCol() + 1},
+			new int[] {this.getRow(), this.getCol() - 1},
+			new int[] {this.getRow(), this.getCol() + 1},
+			new int[] {this.getRow() + 1, this.getCol() - 1},
+			new int[] {this.getRow() + 1, this.getCol()},
+			new int[] {this.getRow() + 1, this.getCol() + 1},
+		};
 	}
 	
 	public int lancerDes() {

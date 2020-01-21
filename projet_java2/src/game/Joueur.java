@@ -2,6 +2,8 @@ package game;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Joueur implements Serializable{
 	/**
@@ -11,6 +13,7 @@ public class Joueur implements Serializable{
 	private int ID = 1;
 	private static int counter = 1;
 	private Color couleur;
+	private List<Territoire> territoires = new ArrayList<Territoire>();
 
 	public Joueur(Color couleur) {
 		super();
@@ -92,5 +95,23 @@ public class Joueur implements Serializable{
 	
 	public String displayTour() {
 		return "C'est au tour du " + this;
+	}
+
+	public List<Territoire> getTerritoires() {
+		return territoires;
+	}
+	
+	public List<Territoire> getTerritoiresDisponibles(){
+		List<Territoire> territoiresDisponibles = new ArrayList<Territoire>();
+		for(Territoire territoire: territoires) {
+			if(territoire.getNombreDes() < 8) {
+				territoiresDisponibles.add(territoire);
+			}
+		}
+		return territoiresDisponibles;
+	}
+
+	public void addTerritoire(Territoire territoire) {
+		this.territoires.add(territoire);
 	}
 }
