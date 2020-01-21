@@ -14,6 +14,16 @@ public class Joueur implements Serializable{
 	private static int counter = 1;
 	private Color couleur;
 	private List<Territoire> territoires = new ArrayList<Territoire>();
+	private boolean IA = false;
+	private int difficulteIA = 1;
+	
+	public int getDifficulteIA() {
+		return difficulteIA;
+	}
+
+	public void setDifficulteIA(int difficulteIA) {
+		this.difficulteIA = difficulteIA;
+	}
 
 	public Joueur(Color couleur) {
 		super();
@@ -23,7 +33,7 @@ public class Joueur implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Joueur " + ID;
+		return "Joueur " + ID + " (" + (isIA() ? "IA" : "Humain") + ")";
 	}
 
 	public int getID() {
@@ -34,6 +44,10 @@ public class Joueur implements Serializable{
 		
 	}
 	
+	public boolean isEliminer() {
+		return this.territoires.size() <= 0;
+	}
+
 	public Color getCouleur() {
 		return couleur;
 	}
@@ -58,7 +72,11 @@ public class Joueur implements Serializable{
 			System.out.printf("Le joueur remporte le territoire attaqué et le nombre de dés passe à %d\n", nombreDes);
 			System.out.println("Le nombre de dés sur le territoire attaquant passe à 1");
 			territoireAttaquee.setNombreDes(nombreDes);
-			territoireAttaquee.setJoueur(territoireAttaquant.getJoueur());
+			Joueur attaquant = territoireAttaquant.getJoueur();
+			Joueur attaque = territoireAttaquee.getJoueur();
+			territoireAttaquee.setJoueur(attaquant);
+			attaquant.addTerritoire(territoireAttaquee);
+			attaque.removeTerritoire(territoireAttaquee);
 			territoireAttaquant.setNombreDes(1);
 			System.out.println("Nouveau joueur du territoire" + this + " " + territoireAttaquee.getJoueur());
 		}else {
@@ -97,10 +115,13 @@ public class Joueur implements Serializable{
 		return "C'est au tour du " + this;
 	}
 
+	
 	public List<Territoire> getTerritoires() {
 		return territoires;
 	}
 	
+	
+	//Liste des territoires ayant moins de 8 cases pour l'attribution de dés 
 	public List<Territoire> getTerritoiresDisponibles(){
 		List<Territoire> territoiresDisponibles = new ArrayList<Territoire>();
 		for(Territoire territoire: territoires) {
@@ -113,5 +134,31 @@ public class Joueur implements Serializable{
 
 	public void addTerritoire(Territoire territoire) {
 		this.territoires.add(territoire);
+	}
+	
+	public void removeTerritoire(Territoire territoire) {
+		this.territoires.remove(territoire);	
+	}
+	
+	public List<Territoire> cloneTerritoires() {
+	    List<Territoire> clone = new ArrayList<Territoire>(this.territoires.size());
+	    
+	    for (Territoire item : this.territoires)
+			try {
+				clone.add((Territoire) item.clone());
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    return clone;
+	}
+
+	public boolean isIA() {
+		return IA;
+	}
+
+	public void setIA(boolean iA) {
+		IA = iA;
 	}
 }

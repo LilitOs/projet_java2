@@ -33,6 +33,18 @@ public class Carte implements Serializable{
 		return counter;
 	}
 	
+	public int getNombreTerritoiresValides() {
+		int counter = 0;
+		for(Territoire[] row: this.territoires) {
+			for(Territoire col: row) {
+				if(col != null) {
+					counter+= 1;
+				}
+			}
+		}
+		return counter;
+	}
+	
 	
 	public Territoire getTerritoireById(int id){
 		Territoire territoire = null;
@@ -67,6 +79,28 @@ public class Carte implements Serializable{
 			}
 		}
 		return joueurTerritoires;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.deepHashCode(territoires);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Carte other = (Carte) obj;
+		if (!Arrays.deepEquals(territoires, other.territoires))
+			return false;
+		return true;
 	}
 
 }

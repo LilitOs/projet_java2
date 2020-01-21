@@ -13,6 +13,7 @@ public class Jeu implements Serializable {
 	private Carte carte;
 	private List<Joueur> joueurs = new ArrayList<Joueur>();
 	private int joueurTour = 0;
+	private boolean finie = false;
 
 	public Jeu(Carte carte, List<Joueur> joueurs) {
 		super();
@@ -24,6 +25,14 @@ public class Jeu implements Serializable {
 
 	public int getJoueurTour() {
 		return joueurTour;
+	}
+
+	public boolean isFinie() {
+		return finie;
+	}
+
+	public void setFinie(boolean finie) {
+		this.finie = finie;
 	}
 
 	public void passerTour() {
@@ -44,8 +53,10 @@ public class Jeu implements Serializable {
 		// répartition des dés sur les territoires du joueur
 		int dicesRemaining = territoiresContigus.size();
 		while (dicesRemaining > 0) {
-			if(joueurActuel.getTerritoiresDisponibles().size() == 0)
+			if(joueurActuel.getTerritoiresDisponibles().size() <= 0) {
 				dicesRemaining = 0;
+				break;
+			}
 			Territoire randomTerritory = getRandomTerritoire(joueurActuel.getTerritoiresDisponibles());
 			int diceNumber = dicesRemaining < 8 ? dicesRemaining : 8;
 			int randomNumber = getRandomNumberInRange(1, diceNumber);
@@ -55,11 +66,12 @@ public class Jeu implements Serializable {
 				randomTerritory.addDes(randomNumber);
 			}
 		}
-		
-		this.joueurTour += 1;
-		if(this.joueurTour >= this.joueurs.size()) {
-			this.joueurTour = 0;
-		}
+		do {
+			this.joueurTour += 1;
+			if(this.joueurTour >= this.joueurs.size()) {
+				this.joueurTour = 0;
+			}
+		}while(this.joueurs.get(this.joueurTour).isEliminer());
 	}
 
 	public Carte getCarte() {
@@ -136,5 +148,39 @@ public class Jeu implements Serializable {
 
 	public void setJoueurs(List<Joueur> joueurs) {
 		this.joueurs = joueurs;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((carte == null) ? 0 : carte.hashCode());
+		result = prime * result + joueurTour;
+		result = prime * result + ((joueurs == null) ? 0 : joueurs.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Jeu other = (Jeu) obj;
+		if (carte == null) {
+			if (other.carte != null)
+				return false;
+		} else if (!carte.equals(other.carte))
+			return false;
+		if (joueurTour != other.joueurTour)
+			return false;
+		if (joueurs == null) {
+			if (other.joueurs != null)
+				return false;
+		} else if (!joueurs.equals(other.joueurs))
+			return false;
+		return true;
 	}
 }

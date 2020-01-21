@@ -2,7 +2,7 @@ package game;
 
 import java.io.Serializable;
 
-public class Territoire implements Serializable{
+public class Territoire implements Serializable, Cloneable{
 	/**
 	 * 
 	 */
@@ -13,6 +13,17 @@ public class Territoire implements Serializable{
 	private static int counter = 1;
 	private int row;
 	private int col;
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		Territoire territoire = (Territoire) super.clone();
+		territoire.nombreDes = nombreDes;
+		territoire.joueur = joueur;
+		territoire.ID = ID;
+		territoire.row = row;
+		territoire.col = col;
+		return territoire;
+	}
 
 	public Territoire(int row, int col) {
 		super();
@@ -87,7 +98,7 @@ public class Territoire implements Serializable{
 	}
 	@Override
 	public String toString() {
-		return "Territoire n°" + ID + " / " + nombreDes + " dés / " + joueur;
+		return "Territoire n°" + ID + " / X " + row + " / Y " + col + " / " + nombreDes + " dés / " + joueur;
 	}
 
 	@Override

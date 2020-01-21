@@ -28,6 +28,8 @@ public class Partie {
 	private static Scanner sc = new Scanner(System.in);
 	private static Jeu jeu;
 	private static String filepath = "./sauvegarde.json";
+	private static int nbRows;
+	private static int nbCols;
 
 	public static void main(String[] args) {		
 		System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
@@ -42,16 +44,26 @@ public class Partie {
 				reponse = sc.nextLine(); 
 			} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
 
-			sc.close();
 			sauvegarde = reponse.toLowerCase().equals("oui") ? true : false;
 		}
 
 		Territoire[][] territoires;
 		Carte carte = null;
+		// lire la sauvegarde
 		if(sauvegarde) {
 			try {
 				lireSauvegarde();
 				carte = jeu.getCarte();
+				if(jeu.isFinie()) {
+					System.out.println("La partie est terminée\nSouhaitez-vous la reprendre ? Tapez Oui / Non");
+
+					String reponse = null;
+					do { 
+						reponse = sc.nextLine(); 
+					} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
+
+					sauvegarde = reponse.toLowerCase().equals("oui") ? true : false;
+				}
 			} catch (ClassNotFoundException | IOException | ClassCastException e) {
 				e.printStackTrace();
 				System.out.println("Erreur de sauvegarde");
@@ -60,13 +72,29 @@ public class Partie {
 			}
 		}
 
+		// s'il ne souhaite pas reprendre la sauvegarde ou qu'il n'y en a pas : générer des joueurs et une map
 		if(!sauvegarde){
-			List<Joueur> joueurs = genererJoueurs();
+			boolean partieContreIA = false;
+			String reponse = null;
+			System.out.println("Souhaitez-vous jouer contre l'IA ? Tapez Oui / Non");
+			do { 
+				reponse = sc.nextLine(); 
+			} while (!reponse.toLowerCase().equals("oui") && !reponse.toLowerCase().equals("non")); 
+			partieContreIA = reponse.toLowerCase().equals("oui") ? true : false;
+
+			List<Joueur> joueurs = genererJoueurs(partieContreIA);
 			territoires = genererMap(joueurs.size());
+
+			boolean connexe = false;
+			do {
+				territoires = genererMap(joueurs.size());
+				connexe = verificationConnexes(territoires);
+			}while(!connexe);
 			carte = new Carte(territoires);
 			jeu = new Jeu(carte, joueurs);
 		}
-
+		
+		sc.close();
 		new GameBoard(jeu);
 	}
 
@@ -93,8 +121,9 @@ public class Partie {
 		int nbCasesVides = nbTerritoires / 3;
 
 		int N = nbTerritoires + nbCasesVides;
-		int nbRows = (int) Math.floor(Math.sqrt(N));
-		int nbCols = (int) Math.ceil(N/nbRows);
+		
+		nbRows = (int) Math.floor(Math.sqrt(N));
+		nbCols = (int) Math.ceil(N/nbRows);
 		if(nbCols * nbRows != N)
 		    nbCols += 1;
 		
@@ -107,7 +136,6 @@ public class Partie {
 			territoires[rowIdx] = new Territoire[nbCols];
 			for (int column = 0; column < nbCols; column++) {
 				if (new Random().nextBoolean() && nbTerritoires > 0) {
-					System.out.println("new Territoire");
 					Territoire territoire = new Territoire(rowIdx, columnIdx);
 					territoires[rowIdx][columnIdx] = territoire;
 					nbTerritoires--;
@@ -120,14 +148,12 @@ public class Partie {
 		// S'il y a encore des territoires non présents sur la map
 		while(nbTerritoires > 0) {
 			boolean condition = false;
-			System.out.println("while begin");
 			int randomStartRow = Jeu.getRandomNumberInRange(0, nbRows - 1);
 			int randomStartCol = Jeu.getRandomNumberInRange(0, nbCols - 1);
 
 			for(int row = randomStartRow; row < (randomStartRow + nbRows); row++ ) {
 				for(int col = randomStartCol; col < (randomStartCol + nbCols); col++ ) {
 					if(territoires[row - randomStartRow][col - randomStartCol] == null) {
-						System.out.println("new territoire after");
 						Territoire territoire = new Territoire(row - randomStartRow, col - randomStartCol);
 						territoires[row - randomStartRow][col - randomStartCol] = territoire;
 						nbTerritoires--;
@@ -140,22 +166,56 @@ public class Partie {
 				}
 			}
 		}
-		
-		// TODO : vérification qu'il n'y a aucun territoire sans voisins
 
 		return territoires;
 	}
+	
+	public static boolean verificationConnexes(Territoire[][] territoires) {
+        boolean[][] visited = new boolean[nbRows][nbCols]; 
+  
+        int count = 0; 
+        for (int i = 0; i < nbRows; ++i) {
+        	for (int j = 0; j < nbCols; ++j) {
+        		if (territoires[i][j] != null && !visited[i][j]){
+        			casesConnexes(territoires, i, j, visited); 
+        			count++; 
+        		} 
+        	}
+        }        
+        return count == 1; 
+	}
 
-	// Génération des joueurs à partir du chiffre entré dans le scanner
-	public static List<Joueur> genererJoueurs() {
+	public static void casesConnexes(Territoire territoires[][], int row, int col, boolean visited[][]) 
+    { 
+        int rowVoisines[] = new int[] { -1, -1, -1, 0, 0, 1, 1, 1 }; 
+        int colVoisines[] = new int[] { -1, 0, 1, -1, 1, -1, 0, 1 }; 
+
+        visited[row][col] = true; 
+
+        for (int voisin = 0; voisin < 8; voisin++) {
+        	if (voisinValide(territoires, row + rowVoisines[voisin], col + colVoisines[voisin], visited)) {
+        		casesConnexes(territoires, row + rowVoisines[voisin], col + colVoisines[voisin], visited); 
+        	}
+        }
+    }
+	
+    public static boolean voisinValide(Territoire territoires[][], int row, int col, 
+                   boolean visited[][]) 
+    { 
+        return (row >= 0) && (row < nbRows) && (col >= 0) && (col < nbCols) && (territoires[row][col] != null && !visited[row][col]); 
+    } 
+
+    // Génération des joueurs à partir du chiffre entré dans le scanner
+	public static List<Joueur> genererJoueurs(boolean partieContreIA) {
 		ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
 		int max = 7;
+		int min = 2;
 		int nombreJoueurs = 5;
 		/*
 		 * int nombreJoueurs; System.out.println("Entrez le nombre de joueurs : (" + max
 		 * + " maximum)"); do { while (!sc.hasNextInt()) sc.next();
 		 * System.out.println("Maximum " + max + " joueurs. Réessayez :"); nombreJoueurs
-		 * = sc.nextInt(); } while (nombreJoueurs > max); sc.nextLine();
+		 * = sc.nextInt(); } while (nombreJoueurs > max && nombreJoueurs < min); sc.nextLine();
 				sc.close();
 		 */
 
@@ -163,18 +223,21 @@ public class Partie {
 			Random random = new Random();
 			float hue = random.nextFloat();
 			float saturation = (random.nextInt(2000) + 1000) / 10000f;
-			float luminance = 0.9f;
+			float luminance = 0.8f;
 			Color color = Color.getHSBColor(hue, saturation, luminance);
-
 			Joueur nouveauJoueur = new Joueur(color);
+			if(partieContreIA && i != 0)
+				nouveauJoueur.setIA(true);
+				
 			joueurs.add(nouveauJoueur);
 		}
+		System.out.println(joueurs);
 		return joueurs;
 	}
 
 	public static void jouerTour(Carte carte, Joueur joueur) {
 		System.out.println("Début du tour du joueur " + joueur.getID());
-		System.out.println("Liste de vos territoires " + carte.getJoueurTerritoires(joueur));
+		System.out.println("Liste de vos territoires " + joueur.getTerritoires());
 		System.out.println("Attaquez : (territoire attaquant territoire attaqué)");
 		// Vérif si les actions de l'utilisateur ne sont pas interdites
 		boolean verification = false;
@@ -200,12 +263,17 @@ public class Partie {
 
 	// Vérification des actions interdites
 	public static void verificationAttaque(Territoire territoireAttaquant, Territoire territoireAttaque, Joueur joueur) throws Exception {
+		System.out.printf("Le joueur %d souhaite attaquer avec le territoire %s le territoire %s \n", joueur.getID(), territoireAttaquant, territoireAttaque);
+		if(territoireAttaquant.getNombreDes() == 1) {
+			throw new Exception("Le territoire ne peut pas attaquer avec 1 dé");
+		}
+		
 		if(!territoireAttaquant.getJoueur().equals(joueur)) {
-			throw new Exception("Le territoire attaquant n'appartient pas à l'attaquant");
+			throw new Exception("Le territoire attaquant n'appartient pas à l'attaquant, il appartient à " + territoireAttaquant.getJoueur());
 		}
 		
 		if(territoireAttaque.getJoueur().equals(territoireAttaquant.getJoueur())){
-			throw new Exception("Le territoire attaque appartient à l'attaquant");
+			throw new Exception("Le territoire attaqué appartient à l'attaquant");
 		}
 		
 		// Vérification que le territoire attaque est un territoire voisin
@@ -226,8 +294,9 @@ public class Partie {
 	public static Joueur verificationFinPartie() {
 		Joueur gagnant = null;
 		for(Joueur joueur: jeu.getJoueurs()) {
-			if(joueur.getTerritoires().size() == jeu.getCarte().getNombreTerritoires()) {
+			if(joueur.getTerritoires().size() == jeu.getCarte().getNombreTerritoiresValides()) {
 				gagnant = joueur;
+				jeu.setFinie(true);
 			}
 		}
 		return gagnant;
